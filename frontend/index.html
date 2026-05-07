@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manthan Agency OS</title>
+<link rel="stylesheet" href="/assets/styles.css" />
+<link rel="stylesheet" href="/assets/features.css" />
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="/assets/three.min.js"></script>
+<script src="/assets/OrbitControls.js"></script>
+</head>
+<body>
+<div class="app-shell">
+
+<aside class="sidebar">
+  <div class="sidebar-logo" onclick="openCompanyProfile()" style="cursor:pointer" title="View company profile">
+    <div class="logo-mark" id="logo-mark">
+      <div class="logo-icon" id="logo-icon">M</div>
+      <div><div class="logo-text" id="logo-text">Manthan</div><div class="logo-sub" id="logo-sub">Agency OS</div></div>
+    </div>
+  </div>
+  <!-- Company Profile Modal -->
+  <div class="modal-overlay" id="company-profile-modal" onclick="if(event.target===this)closeCompanyProfile()">
+    <div class="modal modal-lg" id="company-profile-inner" style="max-width:520px">
+      <div class="modal-header" style="border-bottom:1px solid var(--border)">
+        <div class="modal-title">Agency Profile</div>
+        <button class="btn-icon btn btn-ghost" onclick="closeCompanyProfile()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+      </div>
+      <div id="company-profile-body" style="padding:24px"></div>
+    </div>
+  </div>
+  <nav class="sidebar-nav" id="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <button class="nav-item active" data-screen="dashboard"><i data-lucide="layout-dashboard" class="nav-icon"></i><span>Dashboard</span></button>
+    <button class="nav-item" data-screen="daily-planner"><i data-lucide="sun" class="nav-icon"></i><span>Daily Planner</span></button>
+    <button class="nav-item" data-screen="chat"><i data-lucide="message-square" class="nav-icon"></i><span>Chat</span><span class="nav-badge amber">AI</span></button>
+    <div class="nav-section-label">Clients</div>
+    <button class="nav-item" data-screen="clients"><i data-lucide="users" class="nav-icon"></i><span>Clients</span></button>
+    <button class="nav-item" data-screen="brands"><i data-lucide="git-branch" class="nav-icon"></i><span>Brands</span></button>
+    <button class="nav-item" data-screen="approvals"><i data-lucide="check-square" class="nav-icon"></i><span>Approvals</span><span class="nav-badge" id="approvals-badge" style="display:none">0</span></button>
+    <button class="nav-item" data-screen="deliverables"><i data-lucide="package" class="nav-icon"></i><span>Deliverables</span></button>
+    <div class="nav-section-label">Production</div>
+    <button class="nav-item" data-screen="content-calendar"><i data-lucide="calendar" class="nav-icon"></i><span>Calendar</span></button>
+    <button class="nav-item" data-screen="workbench"><i data-lucide="wrench" class="nav-icon"></i><span>Workbench</span></button>
+    <button class="nav-item" data-screen="lead-pipeline"><i data-lucide="target" class="nav-icon"></i><span>Lead Pipeline</span></button>
+    <button class="nav-item" data-screen="projects"><i data-lucide="folder-kanban" class="nav-icon"></i><span>Projects</span></button>
+    <div class="nav-section-label">Intelligence</div>
+    <button class="nav-item" data-screen="reports"><i data-lucide="bar-chart-3" class="nav-icon"></i><span>Reports</span></button>
+    <button class="nav-item" data-screen="knowledge-base"><i data-lucide="book-open" class="nav-icon"></i><span>Knowledge Base</span></button>
+    <button class="nav-item" data-screen="agents-console"><i data-lucide="bot" class="nav-icon"></i><span>Agents</span></button>
+    <div class="nav-section-label">Operations</div>
+    <button class="nav-item" data-screen="workflows"><i data-lucide="zap" class="nav-icon"></i><span>n8n Workflows</span></button>
+    <button class="nav-item" data-screen="connector-map"><i data-lucide="network" class="nav-icon"></i><span>Connector Map</span></button>
+    <button class="nav-item" data-screen="finance"><i data-lucide="indian-rupee" class="nav-icon"></i><span>Finance</span></button>
+    <button class="nav-item" data-screen="sops"><i data-lucide="file-text" class="nav-icon"></i><span>SOPs</span></button>
+    <button class="nav-item" data-screen="skills"><i data-lucide="code-2" class="nav-icon"></i><span>Skills &amp; Coding</span></button>
+    <div class="nav-section-label">System</div>
+    <button class="nav-item" data-screen="settings"><i data-lucide="settings" class="nav-icon"></i><span>Settings</span></button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="system-status">
+      <span class="status-dot live" id="system-status-dot"></span>
+      <span id="system-status-text">All systems operational</span>
+    </div>
+  </div>
+</aside>
+
+<main class="main-area">
+  <header class="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-spacer"></div>
+    <button class="topbar-search" onclick="openSearch()">
+      <i data-lucide="search" style="width:14px;height:14px"></i>
+      <span>Search anything</span>
+      <span style="margin-left:auto;font-size:0.625rem;padding:1px 5px;background:var(--surface-3);border-radius:4px">⌘K</span>
+    </button>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="navigate('chat')"><i data-lucide="zap" style="width:14px;height:14px"></i> Quick Ask</button>
+      <button class="notif-btn" onclick="toggleNotifications()">
+        <i data-lucide="bell" style="width:16px;height:16px"></i>
+        <span class="notif-count" id="notif-count" style="display:none">0</span>
+      </button>
+      <button class="btn-icon btn btn-ghost" onclick="toggleTheme()" title="Toggle theme">
+        <i data-lucide="moon" style="width:16px;height:16px" id="theme-icon"></i>
+      </button>
+    </div>
+  </header>
+
+  <div class="content-area" id="content-area">
+
+    <!-- DASHBOARD -->
+    <section class="screen" id="screen-dashboard">
+      <div class="page-header">
+        <h1 class="page-title" id="dashboard-title">Welcome back, Yash</h1>
+        <p class="page-desc" id="dashboard-greeting">Loading your agency overview...</p>
+      </div>
+      <div class="kpi-grid" id="dashboard-kpis"></div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Active Clients</div><div class="card-subtitle">Health overview</div></div>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('clients')">View all →</button>
+          </div>
+          <div id="dashboard-clients"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Recent Activity</div><div class="card-subtitle">Last 24 hours</div></div></div>
+          <div id="dashboard-activity"></div>
+        </div>
+      </div>
+      <div class="card mt-6">
+        <div class="card-header">
+          <div><div class="card-title">System Health</div><div class="card-subtitle">All integrations and agents</div></div>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('connector-map')">Connector Map →</button>
+        </div>
+        <div id="dashboard-system" class="grid grid-3"></div>
+      </div>
+      <div class="card mt-6">
+        <div class="card-header">
+          <div>
+            <div class="card-title">💡 Suggested Improvements</div>
+            <div class="card-subtitle">AI-identified opportunities to grow your agency</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="refreshImprovements()"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Refresh</button>
+        </div>
+        <div id="dashboard-improvements">
+          <div class="improvement-item">
+            <div class="improvement-badge high">H</div>
+            <div><div style="font-size:0.8125rem;color:var(--text-1);font-weight:500">Follow up on 3 leads sitting idle for 7+ days</div><div style="font-size:0.75rem;color:var(--text-3);margin-top:2px">Lead pipeline health · High priority</div><div class="improvement-action" onclick="navigate('lead-pipeline')">View leads →</div></div>
+          </div>
+          <div class="improvement-item">
+            <div class="improvement-badge med">M</div>
+            <div><div style="font-size:0.8125rem;color:var(--text-1);font-weight:500">Schedule next QBR for your oldest retainer client</div><div style="font-size:0.75rem;color:var(--text-3);margin-top:2px">Client retention · Medium priority</div><div class="improvement-action" onclick="navigate('content-calendar')">Open calendar →</div></div>
+          </div>
+          <div class="improvement-item">
+            <div class="improvement-badge low">L</div>
+            <div><div style="font-size:0.8125rem;color:var(--text-1);font-weight:500">Content calendar has 4 unscheduled slots this week</div><div style="font-size:0.75rem;color:var(--text-3);margin-top:2px">Content planning · Low priority</div><div class="improvement-action" onclick="navigate('content-calendar')">Fill slots →</div></div>
+          </div>
+          <div id="dashboard-improvements-ai" style="padding:8px 16px;font-size:0.75rem;color:var(--text-3)">Loading AI analysis…</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DAILY PLANNER -->
+    <section class="screen hidden" id="screen-daily-planner">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">📅 Daily Planner</h1><p class="page-desc">Your day at a glance — tasks, briefs &amp; priorities</p></div>
+          <button class="btn btn-primary" onclick="generateMorningBrief()"><i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Refresh Planner</button>
+        </div>
+      </div>
+      <div class="planner-split">
+        <div class="planner-main-col">
+          <div class="card"><div id="morning-brief-content"><div class="empty-state"><div class="spinner"></div><div class="empty-title">Loading today's planner…</div></div></div></div>
+        </div>
+        <div class="planner-chat-col">
+          <div class="planner-chat-header">
+            <i data-lucide="bot" style="width:15px;height:15px;color:var(--accent)"></i>
+            <span>Planner AI</span>
+            <span class="nav-badge amber" style="margin-left:auto">AI</span>
+          </div>
+          <div class="planner-chat-messages" id="planner-chat-messages">
+            <div class="planner-chat-bubble ai">Hey Yash! I'm here to help plan your day. Ask me to prioritize tasks, block time, or get a quick strategy check.</div>
+          </div>
+          <div class="planner-chat-input-row">
+            <textarea class="planner-chat-textarea" id="planner-chat-input" placeholder="Ask about your day…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPlannerChat()}"></textarea>
+            <button class="planner-chat-send" onclick="sendPlannerChat()"><i data-lucide="send" style="width:14px;height:14px"></i></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHAT (with session sidebar) -->
+    <section class="screen hidden screen-full" id="screen-chat">
+      <div class="chat-layout">
+        <div class="chat-sidebar" id="chat-sidebar">
+          <div class="chat-sidebar-header">
+            <span class="text-label">History</span>
+            <button class="btn btn-ghost btn-sm" onclick="newChat()"><i data-lucide="plus" style="width:14px;height:14px"></i></button>
+          </div>
+          <div class="chat-session-list" id="chat-session-list"></div>
+        </div>
+        <div class="chat-main">
+          <div class="chat-toolbar">
+            <div class="chat-selector" onclick="toggleClientSelector()">
+              <i data-lucide="user" style="width:14px;height:14px"></i><span id="chat-client-label">Manthan (general)</span>
+            </div>
+            <div class="chat-selector" onclick="toggleAgentSelector()">
+              <i data-lucide="bot" style="width:14px;height:14px"></i><span id="chat-agent-label">Auto (orchestrator)</span>
+            </div>
+            <div class="chat-selector" onclick="toggleProjectSelector()">
+              <i data-lucide="folder" style="width:14px;height:14px"></i><span id="chat-project-label">No project</span>
+            </div>
+            <div class="devil-toggle" id="devil-toggle" onclick="toggleDevilsAdvocate()">
+              <i data-lucide="flame" style="width:14px;height:14px"></i><span>Devil's Advocate</span>
+            </div>
+            <span class="session-id-chip" id="session-id-chip" style="display:none"></span>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <button class="btn btn-ghost btn-sm" title="Export chat" onclick="exportChat()"><i data-lucide="download" style="width:14px;height:14px"></i></button>
+              <button class="btn btn-ghost btn-sm" title="Clear chat" onclick="clearChatConfirm()"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+            </div>
+          </div>
+          <div class="chat-messages" id="chat-messages">
+            <div class="empty-state"><div class="empty-icon">💬</div><div class="empty-title">Start a conversation</div><div class="empty-desc">Ask anything — research a brand, qualify leads, generate content, plan strategy.</div></div>
+          </div>
+          <div class="chat-quick-commands" id="chat-quick-commands">
+            <button class="quick-cmd" onclick="quickPrompt('Generate my daily plan and priorities for today')">📅 Daily Planner</button>
+            <button class="quick-cmd" onclick="quickPrompt('Research competitors for my active clients')">🔍 Competitors</button>
+            <button class="quick-cmd" onclick="quickPrompt('Qualify next 10 leads from the pipeline')">🎯 Qualify Leads</button>
+            <button class="quick-cmd" onclick="quickPrompt('Plan content calendar for next 30 days')">📅 Plan Content</button>
+            <button class="quick-cmd" onclick="quickPrompt('Show me the current financial snapshot')">💰 Finances</button>
+            <button class="quick-cmd" onclick="quickPrompt('Run QA on pending deliverables')">✅ Run QA</button>
+          </div>
+          <div class="chat-input-area">
+            <div id="chat-attachment-preview" style="display:none;padding:6px 12px;font-size:0.75rem;color:var(--text-3);display:none;align-items:center;gap:8px">
+              <i data-lucide="paperclip" style="width:12px;height:12px"></i>
+              <span id="chat-attachment-name"></span>
+              <button onclick="clearChatAttachment()" style="border:none;background:none;color:var(--rose);cursor:pointer;font-size:0.75rem">✕</button>
+            </div>
+            <div class="chat-input-row">
+              <button class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" title="Attach file">
+                <i data-lucide="paperclip" style="width:15px;height:15px"></i>
+              </button>
+              <input type="file" id="chat-file-input" class="chat-attach-input" accept="image/*,.pdf,.txt,.doc,.docx,.csv,.json" onchange="onChatFileSelected(event)">
+              <textarea class="chat-textarea" id="chat-input" placeholder="Ask anything... (Enter to send, Shift+Enter for new line)" rows="1"></textarea>
+              <button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()"><i data-lucide="send" style="width:16px;height:16px"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLIENTS -->
+    <section class="screen hidden" id="screen-clients">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">Clients</h1><p class="page-desc">Your active client portfolio</p></div>
+          <button class="btn btn-primary" onclick="openOnboardingWizard()"><i data-lucide="plus" style="width:14px;height:14px"></i> Add Client</button>
+        </div>
+      </div>
+      <div id="clients-grid" class="grid grid-3"></div>
+    </section>
+
+    <!-- CLIENT DETAIL -->
+    <section class="screen hidden" id="screen-client-detail">
+      <div class="client-detail-back"><button class="btn btn-ghost btn-sm" onclick="navigate('clients')"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> All Clients</button></div>
+      <div class="client-detail-banner" id="client-detail-banner">
+        <div class="entity-avatar-wrap" onclick="triggerEntityUpload('client')">
+          <div class="client-detail-avatar" id="client-detail-avatar"></div>
+          <div class="entity-avatar-upload-btn" title="Change photo"><i data-lucide="camera" style="width:14px;height:14px"></i></div>
+          <input type="file" id="entity-upload-input" accept="image/*" style="display:none" onchange="handleEntityImageUpload(event,'client')">
+        </div>
+        <div class="client-detail-info">
+          <h1 class="client-detail-name" id="client-detail-name"></h1>
+          <div class="client-detail-meta" id="client-detail-meta"></div>
+        </div>
+      </div>
+      <div class="client-stat-row" id="client-stat-row"></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="tabs" id="client-detail-tabs">
+            <div class="tab active" data-cdtab="overview">Overview</div>
+            <div class="tab" data-cdtab="deliverables">Deliverables</div>
+            <div class="tab" data-cdtab="finance">Finance</div>
+          </div>
+        </div>
+        <div id="client-detail-body"></div>
+      </div>
+    </section>
+
+    <!-- BRANDS (Premium Mind Map) -->
+    <section class="screen hidden" id="screen-brands">
+      <div class="brand-universe-layout">
+        <!-- Left: 3D canvas -->
+        <div class="brand-canvas-col">
+          <div class="brand-canvas-header">
+            <div class="tabs" id="brand-tabs"></div>
+            <div class="brand-canvas-actions">
+              <button class="btn btn-ghost btn-sm" id="brand-reset-btn" onclick="resetBrandCamera()" title="Reset view"><i data-lucide="maximize-2" style="width:13px;height:13px"></i></button>
+              <button class="btn btn-ghost btn-sm" id="brand-edit-btn" onclick="editMindMap()" style="display:none"><i data-lucide="edit-2" style="width:13px;height:13px"></i> Edit</button>
+            </div>
+          </div>
+          <div class="brand-mindmap-wrap" id="brand-mindmap"></div>
+          <div class="brand-canvas-hint">Drag nodes to rearrange · Hover to expand · Click to explore</div>
+        </div>
+        <!-- Right: detail panel + chat -->
+        <div class="brand-right-col">
+          <div class="brand-detail-panel" id="brand-detail-panel">
+            <div class="brand-detail-empty" id="brand-detail-empty">
+              <div class="brand-detail-empty-icon">✦</div>
+              <div class="brand-detail-empty-text">Click any node to explore brand intelligence</div>
+            </div>
+            <div class="brand-detail-content hidden" id="brand-detail-content"></div>
+          </div>
+          <!-- Brand research chatbox -->
+          <div class="brand-chat-panel">
+            <div class="brand-chat-header">
+              <i data-lucide="search" style="width:13px;height:13px;color:var(--accent)"></i>
+              <span>Brand Research AI</span>
+              <span class="nav-badge amber" style="margin-left:auto">AI</span>
+            </div>
+            <div class="brand-chat-messages" id="brand-chat-messages">
+              <div class="planner-chat-bubble ai">Select a brand and ask me anything — competitors, audience, positioning, content ideas…</div>
+            </div>
+            <div class="brand-chat-input-row">
+              <textarea class="brand-chat-textarea" id="brand-chat-input" placeholder="Research this brand…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendBrandChat()}"></textarea>
+              <button class="brand-chat-send" onclick="sendBrandChat()"><i data-lucide="send" style="width:14px;height:14px"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- APPROVALS -->
+    <section class="screen hidden" id="screen-approvals">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">Approvals Queue</h1><p class="page-desc">Review and approve content before it goes live</p></div>
+          <button class="btn btn-ghost btn-sm" onclick="loadApprovals(true)"><i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Refresh</button>
+        </div>
+      </div>
+      <div id="approvals-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px"></div>
+      <div class="tabs" style="margin-bottom:16px" id="approvals-filter-tabs">
+        <div class="tab active" data-approv-filter="all">All</div>
+        <div class="tab" data-approv-filter="pending">Pending</div>
+        <div class="tab" data-approv-filter="approved">Approved</div>
+        <div class="tab" data-approv-filter="revision_requested">Revision</div>
+        <div class="tab" data-approv-filter="rejected">Rejected</div>
+      </div>
+      <div id="approvals-list"></div>
+    </section>
+
+    <!-- DELIVERABLES -->
+    <section class="screen hidden" id="screen-deliverables">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">Deliverables</h1><p class="page-desc">Lifecycle: brief → draft → QA → review → approved → published</p></div>
+          <div class="tabs">
+            <div class="tab active" data-deliv-filter="all">All</div>
+            <div class="tab" data-deliv-filter="brief">Brief</div>
+            <div class="tab" data-deliv-filter="draft">Draft</div>
+            <div class="tab" data-deliv-filter="client_review">Review</div>
+            <div class="tab" data-deliv-filter="approved">Approved</div>
+          </div>
+        </div>
+      </div>
+      <div class="card"><div id="deliverables-list"></div></div>
+    </section>
+
+    <!-- CONTENT CALENDAR (4 tabs) -->
+    <section class="screen hidden" id="screen-content-calendar">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">Calendar</h1><p class="page-desc">Content, meetings, deadlines &amp; milestones</p></div>
+          <button class="btn btn-primary btn-sm" onclick="openAddCalendarEvent()"><i data-lucide="plus" style="width:14px;height:14px"></i> Add Event</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header" style="flex-direction:column;gap:12px;align-items:flex-start">
+          <div class="tabs" id="calendar-tabs">
+            <div class="tab active" data-cal-tab="content">Content</div>
+            <div class="tab" data-cal-tab="meetings">Meetings</div>
+            <div class="tab" data-cal-tab="deadlines">Deadlines</div>
+            <div class="tab" data-cal-tab="milestones">Milestones</div>
+          </div>
+          <div class="cal-filters" id="cal-filters">
+            <span class="cal-filter active" data-cal-filter="all">All</span>
+            <span class="cal-filter" data-cal-filter="brand">Brand</span>
+            <span class="cal-filter" data-cal-filter="clients">Clients</span>
+            <span class="cal-filter" data-cal-filter="personal">Personal</span>
+          </div>
+        </div>
+        <div id="calendar-body"></div>
+      </div>
+      <!-- Add Calendar Event Modal -->
+      <div class="modal-overlay" id="add-cal-modal" onclick="if(event.target===this)closeAddCalendarEvent()">
+        <div class="modal">
+          <div class="modal-header">
+            <div>
+              <div class="modal-title">Add Calendar Entry</div>
+              <div class="text-small text-muted mt-2">Schedule a meeting, content drop, deadline, or milestone</div>
+            </div>
+            <button class="btn-icon btn btn-ghost" onclick="closeAddCalendarEvent()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="form-label">Title *</label>
+              <input class="form-input" id="cal-title" placeholder="Event or task name" />
+            </div>
+            <div class="grid grid-3" style="gap:12px">
+              <div class="form-group">
+                <label class="form-label">Date *</label>
+                <input class="form-input" id="cal-date" type="date" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Start Time</label>
+                <input class="form-input" id="cal-start-time" type="time" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">End Time</label>
+                <input class="form-input" id="cal-end-time" type="time" />
+              </div>
+            </div>
+            <div class="grid grid-2" style="gap:12px">
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-input" id="cal-category">
+                  <option value="brand">Brand</option>
+                  <option value="clients">Clients</option>
+                  <option value="personal">Personal</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Type</label>
+                <select class="form-input" id="cal-type">
+                  <option value="meetings">Meeting</option>
+                  <option value="content">Content</option>
+                  <option value="deadlines">Deadline</option>
+                  <option value="milestones">Milestone</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Location / Link</label>
+              <input class="form-input" id="cal-location" placeholder="Office, Zoom URL, or address" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Notes</label>
+              <textarea class="form-input" id="cal-notes" rows="3" placeholder="Agenda, prep notes, or context…"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeAddCalendarEvent()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveCalendarEvent()"><i data-lucide="calendar-plus" style="width:13px;height:13px"></i> Save Entry</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REPORTS (real data) -->
+    <section class="screen hidden" id="screen-reports">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">Reports</h1><p class="page-desc">Agency performance — real data</p></div>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost btn-sm" onclick="loadReports(true)"><i data-lucide="refresh-cw" style="width:13px;height:13px"></i> Refresh</button>
+            <button class="btn btn-gold" onclick="generateWeeklyReport()"><i data-lucide="file-text" style="width:13px;height:13px"></i> Generate Report</button>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="reports-kpis"></div>
+      <div class="card mt-4">
+        <div class="card-header">
+          <div><div class="card-title">MRR Trend</div><div class="card-subtitle">Monthly recurring revenue — 6-month view</div></div>
+        </div>
+        <canvas id="reports-mrr-chart" height="100"></canvas>
+      </div>
+      <div class="grid grid-2 mt-4">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Agent Activity</div><div class="card-subtitle">Runs this period</div></div>
+          <canvas id="reports-agents-chart" height="200"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Deliverable Pipeline</div><div class="card-subtitle">By status</div></div>
+          <canvas id="reports-pipeline-chart" height="200"></canvas>
+        </div>
+      </div>
+      <div class="card mt-4">
+        <div class="card-header">
+          <div><div class="card-title">Client Performance</div><div class="card-subtitle">All clients this month</div></div>
+        </div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Client</th><th>Deliverables</th><th>Pending Approvals</th><th>MRR</th></tr></thead><tbody id="reports-client-tbody"><tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-3)">Loading…</td></tr></tbody></table></div>
+      </div>
+      <div class="card mt-4" id="reports-lead-card">
+        <div class="card-header"><div class="card-title">Lead Funnel</div><div class="card-subtitle">Pipeline snapshot</div></div>
+        <div id="reports-lead-funnel" class="reports-funnel"></div>
+      </div>
+    </section>
+
+    <!-- LEAD PIPELINE -->
+    <section class="screen hidden" id="screen-lead-pipeline">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">Lead Pipeline</h1><p class="page-desc" id="leads-page-desc">Loading leads…</p></div>
+          <div class="flex gap-2">
+            <div class="view-toggle">
+              <button class="view-toggle-btn active" data-leads-view="table" onclick="setLeadsView('table',this)"><i data-lucide="list" style="width:13px;height:13px"></i> Table</button>
+              <button class="view-toggle-btn" data-leads-view="kanban" onclick="setLeadsView('kanban',this)"><i data-lucide="layout-grid" style="width:13px;height:13px"></i> Kanban</button>
+            </div>
+            <input id="leads-search" class="form-input" style="width:200px" placeholder="Search leads…" oninput="filterLeads(this.value)">
+            <button class="btn btn-ghost btn-icon" onclick="loadLeads()" title="Refresh"><i data-lucide="refresh-cw" style="width:14px;height:14px"></i></button>
+            <button class="btn btn-primary" onclick="qualifyBatch()"><i data-lucide="zap" style="width:14px;height:14px"></i> Qualify Next 10</button>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="leads-kpis"></div>
+
+      <!-- TABLE VIEW -->
+      <div class="card" id="leads-table-view">
+        <div class="table-wrap">
+          <table id="leads-table" class="leads-table-premium">
+            <thead><tr><th>Business</th><th>Category</th><th>Fit Score</th><th>Status</th><th>Pain Point</th><th>Last Contact</th><th></th></tr></thead>
+            <tbody id="leads-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination-bar" id="leads-pagination"></div>
+      </div>
+
+      <!-- KANBAN VIEW -->
+      <div class="leads-kanban hidden" id="leads-kanban-view"></div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="screen hidden" id="screen-projects">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">Projects</h1><p class="page-desc">Active client projects from Airtable</p></div>
+          <button class="btn btn-primary" onclick="openProjectModal()"><i data-lucide="plus" style="width:14px;height:14px"></i> New Project</button>
+        </div>
+      </div>
+      <div id="projects-grid" class="grid grid-3"></div>
+    </section>
+
+    <!-- WORKFLOWS -->
+    <section class="screen hidden screen-full" id="screen-workflows">
+      <div class="wf-layout">
+        <!-- Left: workflow list -->
+        <div class="wf-left">
+          <div class="wf-left-header">
+            <div class="flex items-center gap-2">
+              <span class="card-title" style="font-size:1rem">Workflows</span>
+              <span class="badge badge-emerald" id="n8n-health-badge" style="font-size:0.65rem">—</span>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="loadWorkflows(true)"><i data-lucide="refresh-cw" style="width:13px;height:13px"></i></button>
+          </div>
+          <div class="wf-search-wrap">
+            <input class="form-input wf-search" id="wf-search" placeholder="Search workflows…" oninput="filterWorkflows(this.value)" />
+            <div class="wf-filter-btns">
+              <button class="wf-filter active" data-wf="all" onclick="setWfFilter('all',this)">All</button>
+              <button class="wf-filter" data-wf="active" onclick="setWfFilter('active',this)">Active</button>
+              <button class="wf-filter" data-wf="inactive" onclick="setWfFilter('inactive',this)">Inactive</button>
+            </div>
+          </div>
+          <div id="workflows-list" class="wf-list"></div>
+        </div>
+        <!-- Right: n8n AI assistant -->
+        <div class="wf-right">
+          <div class="wf-ai-header">
+            <div class="flex items-center gap-8px">
+              <div class="wf-ai-icon">⚡</div>
+              <div>
+                <div style="font-size:0.875rem;font-weight:600;color:var(--text-1)">n8n AI Assistant</div>
+                <div style="font-size:0.72rem;color:var(--text-3)">Ask about automation, workflows, and n8n nodes</div>
+              </div>
+            </div>
+          </div>
+          <div class="wf-ai-messages" id="wf-ai-messages">
+            <div class="wf-ai-msg wf-ai-assistant">
+              <div class="wf-ai-bubble">👋 I'm your n8n expert. Ask me to explain workflows, suggest automation ideas, help debug triggers, or query your live workflow data.</div>
+            </div>
+          </div>
+          <div class="wf-ai-input-wrap">
+            <textarea class="wf-ai-input" id="wf-ai-input" placeholder="Ask anything about your automations…" rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendWfAiMessage()}"></textarea>
+            <button class="btn btn-primary wf-ai-send" onclick="sendWfAiMessage()"><i data-lucide="send" style="width:14px;height:14px"></i></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKBENCH (two-pane) -->
+    <section class="screen hidden screen-full" id="screen-workbench">
+      <div class="workbench-layout">
+        <div class="wb-tools-sidebar">
+          <div class="wb-sidebar-header">Tools</div>
+          <div id="wb-tools-list"></div>
+        </div>
+        <div class="wb-active-panel" id="wb-active-panel">
+          <div class="empty-state" style="margin:auto">
+            <div class="empty-icon">🛠️</div>
+            <div class="empty-title">Select a tool</div>
+            <div class="empty-desc">Choose a tool from the left panel to get started</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AGENTS CONSOLE -->
+    <section class="screen hidden" id="screen-agents-console">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">Agents Console</h1><p class="page-desc">Powered by Anthropic Claude — click any agent for details</p></div>
+          <button class="btn btn-primary" onclick="openAgentCreate()"><i data-lucide="plus" style="width:14px;height:14px"></i> Create Agent</button>
+        </div>
+      </div>
+      <div class="grid grid-3" id="agents-grid"></div>
+    </section>
+
+    <!-- FINANCE -->
+    <section class="screen hidden" id="screen-finance">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">Finance</h1><p class="page-desc">Revenue, invoices, client breakdown</p></div>
+          <div class="flex" style="gap:8px">
+            <button class="btn btn-secondary btn-sm" onclick="exportFinanceCSV()"><i data-lucide="download" style="width:13px;height:13px"></i> Export</button>
+            <button class="btn btn-gold" onclick="openInvoiceModal()"><i data-lucide="file-plus" style="width:13px;height:13px"></i> New Invoice</button>
+          </div>
+        </div>
+      </div>
+      <!-- Finance KPIs -->
+      <div class="kpi-grid" id="finance-kpis"></div>
+      <!-- Finance Tabs -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="card-header" style="padding:16px 24px 0">
+          <div class="tabs" id="finance-tabs">
+            <div class="tab active" data-fin-tab="overview">Overview</div>
+            <div class="tab" data-fin-tab="clients">By Client</div>
+            <div class="tab" data-fin-tab="invoices">Invoices</div>
+            <div class="tab" data-fin-tab="runway">Runway</div>
+          </div>
+        </div>
+        <!-- Overview tab -->
+        <div class="fin-tab-panel active" id="fin-panel-overview">
+          <div class="grid grid-2" style="padding:20px;gap:20px">
+            <div>
+              <div class="text-small text-muted mb-2" style="padding:0 4px">MRR Trend (6 months)</div>
+              <canvas id="finance-mrr-chart" height="200"></canvas>
+            </div>
+            <div>
+              <div class="text-small text-muted mb-2" style="padding:0 4px">Revenue Mix</div>
+              <canvas id="finance-mix-chart" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+        <!-- By Client tab -->
+        <div class="fin-tab-panel hidden" id="fin-panel-clients">
+          <div id="finance-client-breakdown" style="padding:20px"></div>
+        </div>
+        <!-- Invoices tab -->
+        <div class="fin-tab-panel hidden" id="fin-panel-invoices">
+          <div class="fin-invoice-filters">
+            <button class="fin-inv-filter active" data-inv-filter="all">All</button>
+            <button class="fin-inv-filter" data-inv-filter="pending">Pending</button>
+            <button class="fin-inv-filter" data-inv-filter="paid">Paid</button>
+            <button class="fin-inv-filter" data-inv-filter="overdue">Overdue</button>
+          </div>
+          <div id="invoices-list" style="padding:0 20px 20px"></div>
+        </div>
+        <!-- Runway tab -->
+        <div class="fin-tab-panel hidden" id="fin-panel-runway">
+          <div id="finance-runway-panel" style="padding:20px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KNOWLEDGE BASE -->
+    <section class="screen hidden" id="screen-knowledge-base">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">Knowledge Base</h1><p class="page-desc">Decisions, lessons, market intel — institutional memory</p></div>
+          <div class="flex gap-2" id="kb-header-actions">
+            <button class="btn btn-primary hidden" id="kb-upload-btn" onclick="triggerKbFileUpload()"><i data-lucide="upload" style="width:14px;height:14px"></i> Upload File</button>
+            <button class="btn btn-primary" id="kb-add-entry-btn" onclick="openKbModal()"><i data-lucide="plus" style="width:14px;height:14px"></i> Add Entry</button>
+          </div>
+        </div>
+      </div>
+      <!-- Tab switcher -->
+      <div class="kb-folder-tabs" id="kb-section-tabs">
+        <button class="kb-folder-tab active" data-kbtab="entries" onclick="switchKbTab('entries',this)"><i data-lucide="book-open" style="width:13px;height:13px"></i> Knowledge</button>
+        <button class="kb-folder-tab" data-kbtab="files" onclick="switchKbTab('files',this)"><i data-lucide="folder" style="width:13px;height:13px"></i> Client &amp; Brand Files</button>
+      </div>
+      <!-- Entries tab -->
+      <div id="kb-entries-tab">
+        <div class="kb-toolbar">
+          <input class="form-input kb-search" id="kb-search" placeholder="Search entries…" oninput="filterKb(this.value)" />
+          <div class="kb-cats" id="kb-cats"></div>
+        </div>
+        <div class="kb-grid" id="kb-entries"></div>
+      </div>
+      <!-- Files tab -->
+      <div id="kb-files-tab" class="hidden">
+        <input type="file" id="kb-file-upload-input" multiple style="display:none" onchange="handleKbFileUpload(event)">
+        <div class="kb-file-browser" id="kb-file-browser">
+          <div class="empty-state"><div class="spinner"></div><div class="empty-title">Loading folders…</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KB ENTRY MODAL -->
+    <div class="modal-overlay hidden" id="kb-modal">
+      <div class="modal" style="max-width:560px">
+        <div class="modal-header">
+          <h3 class="modal-title" id="kb-modal-title">Add Knowledge Entry</h3>
+          <button class="modal-close" onclick="closeKbModal()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="kb-edit-id" />
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input class="form-input" id="kb-title" placeholder="e.g. Pricing strategy for SaaS clients" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select class="form-input" id="kb-category">
+              <option value="strategy">Strategy</option>
+              <option value="clients">Clients</option>
+              <option value="market">Market Intel</option>
+              <option value="process">Process</option>
+              <option value="tech">Tech</option>
+              <option value="finance">Finance</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Content</label>
+            <textarea class="form-input" id="kb-content" rows="6" placeholder="Document the decision, lesson, or insight…"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tags <span style="color:var(--text-3);font-weight:400">(comma-separated)</span></label>
+            <input class="form-input" id="kb-tags" placeholder="pricing, retainer, negotiation" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Attach Files <span style="color:var(--text-3);font-weight:400">(PDFs, docs, screenshots — up to 25MB each)</span></label>
+            <div class="file-drop-zone" id="kb-file-drop">
+              <input type="file" id="kb-file-input" multiple style="display:none" />
+              <div class="file-drop-prompt" onclick="document.getElementById('kb-file-input').click()">
+                <i data-lucide="upload-cloud" style="width:24px;height:24px"></i>
+                <div class="text-small">Click to choose files or drag & drop here</div>
+              </div>
+              <div id="kb-file-list" class="file-attached-list"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeKbModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveKbEntry()">Save Entry</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KB DETAIL MODAL -->
+    <div class="modal-overlay hidden" id="kb-detail-modal">
+      <div class="modal" style="max-width:620px">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title" id="kb-detail-title">Entry Title</h3>
+            <span class="badge" id="kb-detail-cat" style="margin-top:4px"></span>
+          </div>
+          <button class="modal-close" onclick="closeKbDetailModal()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+        </div>
+        <div class="modal-body">
+          <div id="kb-detail-body" style="white-space:pre-wrap;font-size:0.875rem;color:var(--text-1);line-height:1.7"></div>
+          <div id="kb-detail-tags" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:6px"></div>
+          <div id="kb-detail-meta" style="margin-top:12px;font-size:0.75rem;color:var(--text-3)"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost btn-sm" onclick="editKbEntry(window._kbDetailId)"><i data-lucide="edit-2" style="width:13px;height:13px"></i> Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteKbEntry(window._kbDetailId)"><i data-lucide="trash-2" style="width:13px;height:13px"></i> Delete</button>
+          <button class="btn btn-ghost" onclick="closeKbDetailModal()">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOPs -->
+    <section class="screen hidden" id="screen-sops">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">SOPs</h1><p class="page-desc">Repeatable processes for consistent execution</p></div>
+          <button class="btn btn-primary btn-sm" onclick="openSopModal()"><i data-lucide="plus" style="width:14px;height:14px"></i> New SOP</button>
+        </div>
+      </div>
+      <div class="sop-toolbar">
+        <div class="sop-search-wrap">
+          <i data-lucide="search" class="sop-search-icon"></i>
+          <input type="text" class="sop-search-input" id="sop-search" placeholder="Search SOPs by title, category or tag…" oninput="filterSops(this.value)">
+        </div>
+        <div class="kb-cats" id="sop-cats"></div>
+      </div>
+      <div id="sop-grid"></div>
+
+      <!-- Add/Edit Modal -->
+      <div class="modal-overlay hidden" id="sop-modal-overlay" onclick="closeSopModal()">
+        <div class="modal" onclick="event.stopPropagation()" style="max-width:560px">
+          <div class="modal-header">
+            <span id="sop-modal-title" class="modal-title">New SOP</span>
+            <button class="modal-close" onclick="closeSopModal()">×</button>
+          </div>
+          <div class="modal-body" style="display:flex;flex-direction:column;gap:16px">
+            <input type="hidden" id="sop-edit-id">
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input class="form-input" id="sop-form-title" placeholder="e.g. Client Onboarding Process">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-input" id="sop-form-category">
+                  <option value="ops">Operations</option>
+                  <option value="content">Content</option>
+                  <option value="client">Client</option>
+                  <option value="finance">Finance</option>
+                  <option value="growth">Growth</option>
+                  <option value="tech">Tech</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Owner</label>
+                <input class="form-input" id="sop-form-owner" value="Yash" placeholder="Owner name">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea class="form-input" id="sop-form-desc" rows="2" placeholder="Brief description of this process"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="display:flex;justify-content:space-between;align-items:center">
+                <span>Steps</span>
+                <button class="btn btn-ghost" style="font-size:0.75rem;padding:2px 8px" onclick="addSopStep()">+ Add Step</button>
+              </label>
+              <div id="sop-steps-list" style="display:flex;flex-direction:column;gap:8px;min-height:40px"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeSopModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveSop()">Save SOP</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Modal -->
+      <div class="modal-overlay hidden" id="sop-detail-overlay" onclick="closeSopDetail()">
+        <div class="modal" onclick="event.stopPropagation()" style="max-width:640px">
+          <div class="modal-header">
+            <div>
+              <span id="sop-detail-title" class="modal-title"></span>
+              <div id="sop-detail-meta" style="font-size:0.75rem;color:var(--text-3);margin-top:2px"></div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn btn-ghost btn-sm" id="sop-detail-edit-btn" onclick="">Edit</button>
+              <button class="modal-close" onclick="closeSopDetail()">×</button>
+            </div>
+          </div>
+          <div class="modal-body" id="sop-detail-body"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONNECTOR MAP (professional grid) -->
+    <section class="screen hidden" id="screen-connector-map">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">System Architecture</h1><p class="page-desc">All connectors — status, configuration, health</p></div>
+          <button class="btn btn-ghost btn-sm" onclick="refreshConnectors()"><i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Refresh</button>
+        </div>
+      </div>
+      <div id="connector-grid-container"></div>
+    </section>
+
+    <!-- SKILLS & CODING -->
+    <section class="screen hidden" id="screen-skills">
+      <div class="page-header">
+        <div class="flex justify-between items-center">
+          <div><h1 class="page-title">Skills &amp; Coding</h1><p class="page-desc">Run code, learn skills, and build your technical toolkit</p></div>
+          <button class="btn btn-primary btn-sm" onclick="openSkillsTerminal()"><i data-lucide="terminal" style="width:14px;height:14px"></i> Open Terminal</button>
+        </div>
+      </div>
+      <div class="skills-layout">
+        <!-- Left: Terminal -->
+        <div class="skills-terminal-panel">
+          <div class="skills-terminal-header">
+            <span class="skills-terminal-title"><i data-lucide="terminal" style="width:14px;height:14px"></i> Sandboxed Terminal</span>
+            <div class="skills-terminal-dots"><span></span><span></span><span></span></div>
+          </div>
+          <div class="skills-terminal-output" id="terminal-output">
+            <div class="terminal-line terminal-info">Manthan Agency Terminal v1.0 — sandboxed environment</div>
+            <div class="terminal-line terminal-info">Allowed: node, npm, ls, cat, echo, pwd, git status/log/diff</div>
+            <div class="terminal-line terminal-info">Type a command below and press Enter ↵</div>
+            <div class="terminal-line terminal-dim">──────────────────────────────────</div>
+          </div>
+          <div class="skills-terminal-input-row">
+            <span class="terminal-prompt">$</span>
+            <input class="terminal-input" id="terminal-input" placeholder="e.g. node --version" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')runTerminalCmd()" />
+            <button class="btn btn-sm btn-primary" onclick="runTerminalCmd()"><i data-lucide="play" style="width:12px;height:12px"></i></button>
+          </div>
+        </div>
+        <!-- Right: Skills catalog -->
+        <div class="skills-catalog">
+          <div class="skills-catalog-header">Learning Paths</div>
+          <div class="skills-grid" id="skills-grid">
+            <!-- Populated by loadSkillsCatalog() -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS (full tabbed) -->
+    <section class="screen hidden" id="screen-settings">
+      <div class="page-header">
+        <div><h1 class="page-title">Settings</h1><p class="page-desc">Workspace configuration, connectors, preferences</p></div>
+      </div>
+      <div class="settings-layout">
+        <!-- Left nav -->
+        <nav class="settings-nav">
+          <button class="settings-nav-item active" data-stab="general"><i data-lucide="sliders" style="width:15px;height:15px"></i> General</button>
+          <button class="settings-nav-item" data-stab="appearance"><i data-lucide="palette" style="width:15px;height:15px"></i> Appearance</button>
+          <button class="settings-nav-item" data-stab="connectors"><i data-lucide="plug" style="width:15px;height:15px"></i> Connectors</button>
+          <button class="settings-nav-item" data-stab="notifications"><i data-lucide="bell" style="width:15px;height:15px"></i> Notifications</button>
+          <button class="settings-nav-item" data-stab="shortcuts"><i data-lucide="keyboard" style="width:15px;height:15px"></i> Shortcuts</button>
+          <button class="settings-nav-item" data-stab="developer"><i data-lucide="code-2" style="width:15px;height:15px"></i> Developer</button>
+        </nav>
+        <!-- Right panels -->
+        <div class="settings-panels">
+
+          <!-- General -->
+          <div class="settings-panel active" id="stab-general">
+            <div class="settings-section-title">Workspace</div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Agency Name</div><div class="settings-row-desc">Displayed in sidebar and reports</div></div>
+              <input class="form-input settings-input" id="st-agency-name" value="Manthan AI Agency" />
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Your Name</div><div class="settings-row-desc">Used in personalized greetings</div></div>
+              <input class="form-input settings-input" id="st-owner-name" value="Yash" />
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">City / Timezone</div><div class="settings-row-desc">For scheduling and daily brief timing</div></div>
+              <input class="form-input settings-input" id="st-city" value="Bengaluru, IST" />
+            </div>
+            <div class="settings-section-title" style="margin-top:28px">AI Model Defaults</div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Default Agent Model</div><div class="settings-row-desc">Claude model used when no agent-specific override is set</div></div>
+              <select class="form-input settings-input" id="st-default-model">
+                <option value="claude-sonnet-4-5">claude-sonnet-4-5 (recommended)</option>
+                <option value="claude-opus-4-5">claude-opus-4-5 (powerful)</option>
+                <option value="claude-haiku-4-5">claude-haiku-4-5 (fast)</option>
+              </select>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Max Tokens per Run</div><div class="settings-row-desc">Maximum output length for agent runs</div></div>
+              <input class="form-input settings-input" id="st-max-tokens" value="8096" type="number" />
+            </div>
+            <div class="settings-save-row">
+              <button class="btn btn-primary" onclick="saveGeneralSettings()">Save Changes</button>
+            </div>
+          </div>
+
+          <!-- Appearance -->
+          <div class="settings-panel hidden" id="stab-appearance">
+            <div class="settings-section-title">Theme</div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Dark Mode</div><div class="settings-row-desc">Obsidian dark theme — optimised for focus</div></div>
+              <div class="toggle on" id="theme-toggle" onclick="toggleTheme()"></div>
+            </div>
+            <div class="settings-section-title" style="margin-top:28px">Accent Color</div>
+            <div class="accent-swatches" id="accent-swatches">
+              <button class="accent-swatch active" data-accent="#4F6EF7" style="background:#4F6EF7" title="Indigo (default)"></button>
+              <button class="accent-swatch" data-accent="#a855f7" style="background:#a855f7" title="Violet"></button>
+              <button class="accent-swatch" data-accent="#06b6d4" style="background:#06b6d4" title="Cyan"></button>
+              <button class="accent-swatch" data-accent="#34C759" style="background:#34C759" title="Emerald"></button>
+              <button class="accent-swatch" data-accent="#F4B942" style="background:#F4B942" title="Gold"></button>
+              <button class="accent-swatch" data-accent="#FF375F" style="background:#FF375F" title="Rose"></button>
+            </div>
+            <div class="settings-section-title" style="margin-top:28px">Density</div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Sidebar Compact Mode</div><div class="settings-row-desc">Show only icons in the sidebar</div></div>
+              <div class="toggle" id="compact-toggle"></div>
+            </div>
+          </div>
+
+          <!-- Connectors -->
+          <div class="settings-panel hidden" id="stab-connectors">
+
+            <!-- n8n dedicated section -->
+            <div class="n8n-connect-card" id="n8n-connect-card">
+              <div class="n8n-connect-header">
+                <div class="n8n-connect-logo">
+                  <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#EF5533"/><path d="M9 16c0-3.866 3.134-7 7-7s7 3.134 7 7-3.134 7-7 7-7-3.134-7-7zm7-4.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z" fill="#fff"/></svg>
+                </div>
+                <div>
+                  <div class="n8n-connect-title">Connect n8n</div>
+                  <div class="n8n-connect-subtitle">Automate workflows via API or webhook</div>
+                </div>
+                <span class="badge badge-default" id="n8n-status-badge" style="margin-left:auto">Not connected</span>
+              </div>
+              <div class="n8n-connect-tabs">
+                <button class="n8n-tab active" data-n8ntab="api" onclick="_switchN8nTab('api',this)">API Token</button>
+                <button class="n8n-tab" data-n8ntab="webhook" onclick="_switchN8nTab('webhook',this)">Webhook URL</button>
+                <button class="n8n-tab" data-n8ntab="mcp" onclick="_switchN8nTab('mcp',this)">MCP Token</button>
+              </div>
+              <!-- API Token panel -->
+              <div class="n8n-tab-panel" id="n8ntab-api">
+                <label class="settings-row-label" style="font-size:0.78rem;margin-bottom:6px;display:block">n8n Base URL</label>
+                <input class="form-input" id="n8n-base-url" placeholder="https://your-instance.app.n8n.cloud" style="margin-bottom:10px" />
+                <label class="settings-row-label" style="font-size:0.78rem;margin-bottom:6px;display:block">API Key</label>
+                <div class="settings-key-wrap">
+                  <input class="form-input" type="password" id="n8n-api-key" placeholder="n8n_api_..." />
+                  <button class="btn btn-ghost btn-sm" onclick="toggleKeyVis('n8n-api-key',this)">Show</button>
+                </div>
+                <div class="settings-note" style="margin-top:10px"><i data-lucide="info" style="width:13px;height:13px;flex-shrink:0"></i> Find your API key in n8n → Settings → API → Create new key.</div>
+              </div>
+              <!-- Webhook URL panel -->
+              <div class="n8n-tab-panel hidden" id="n8ntab-webhook">
+                <label class="settings-row-label" style="font-size:0.78rem;margin-bottom:6px;display:block">Webhook URL</label>
+                <input class="form-input" id="n8n-webhook-url" placeholder="https://yourinstance.app.n8n.cloud/webhook/abc123" />
+                <div class="settings-note" style="margin-top:10px"><i data-lucide="info" style="width:13px;height:13px;flex-shrink:0"></i> Add a Webhook trigger node in n8n, set it to POST, and paste the test or production URL here.</div>
+              </div>
+              <!-- MCP Token panel -->
+              <div class="n8n-tab-panel hidden" id="n8ntab-mcp">
+                <label class="settings-row-label" style="font-size:0.78rem;margin-bottom:6px;display:block">MCP JWT Token</label>
+                <div class="settings-key-wrap">
+                  <input class="form-input" type="password" id="n8n-mcp-token" placeholder="eyJ..." />
+                  <button class="btn btn-ghost btn-sm" onclick="toggleKeyVis('n8n-mcp-token',this)">Show</button>
+                </div>
+                <div class="settings-note" style="margin-top:10px"><i data-lucide="info" style="width:13px;height:13px;flex-shrink:0"></i> MCP tokens are available on n8n Cloud plans with the MCP integration enabled.</div>
+              </div>
+              <div class="flex" style="gap:10px;margin-top:14px">
+                <button class="btn btn-primary btn-sm" onclick="saveN8nConfig()" style="flex:1"><i data-lucide="save" style="width:13px;height:13px"></i> Save</button>
+                <button class="btn btn-ghost btn-sm" onclick="testN8nConnection()" style="flex:1"><i data-lucide="zap" style="width:13px;height:13px"></i> Test Connection</button>
+              </div>
+            </div>
+
+            <div class="settings-row" style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;margin-top:24px">
+              <div class="settings-row-info">
+                <div class="settings-row-label">All API Connections</div>
+                <div class="settings-row-desc">Claude, Airtable, WhatsApp, and more</div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="openCustomConnectorModal()">
+                <i data-lucide="plus" style="width:14px;height:14px"></i> Add Custom Connector
+              </button>
+            </div>
+            <div id="settings-connector-list"></div>
+            <div class="settings-section-title" style="margin-top:24px">Your Custom Connectors</div>
+            <div id="custom-connector-list"></div>
+          </div>
+
+          <!-- Notifications -->
+          <div class="settings-panel hidden" id="stab-notifications">
+            <div class="settings-section-title">WhatsApp Alerts</div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Daily Brief</div><div class="settings-row-desc">Receive morning brief via WhatsApp at 8am IST</div></div>
+              <div class="toggle on" id="notif-brief-toggle"></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Approval Alerts</div><div class="settings-row-desc">Notify when a client approval requires action</div></div>
+              <div class="toggle on" id="notif-approval-toggle"></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Lead Notifications</div><div class="settings-row-desc">Alert when a new high-score lead is qualified</div></div>
+              <div class="toggle" id="notif-lead-toggle"></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Automation Health</div><div class="settings-row-desc">Alert if any n8n workflow fails or goes silent</div></div>
+              <div class="toggle on" id="notif-health-toggle"></div>
+            </div>
+            <div class="settings-section-title" style="margin-top:28px">Quiet Hours</div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Do Not Disturb</div><div class="settings-row-desc">Suppress all alerts during these hours</div></div>
+              <div class="flex" style="gap:8px;align-items:center">
+                <input class="form-input" style="width:90px" type="time" value="22:00" id="st-dnd-start" />
+                <span class="text-muted text-small">to</span>
+                <input class="form-input" style="width:90px" type="time" value="08:00" id="st-dnd-end" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Shortcuts -->
+          <div class="settings-panel hidden" id="stab-shortcuts">
+            <div class="settings-section-title">Keyboard Shortcuts</div>
+            <div class="shortcut-table">
+              <div class="shortcut-row"><span class="text-small">Global Search</span><div class="flex" style="gap:4px"><kbd>⌘</kbd><kbd>K</kbd></div></div>
+              <div class="shortcut-row"><span class="text-small">Open Chat</span><div class="flex" style="gap:4px"><kbd>⌘</kbd><kbd>/</kbd></div></div>
+              <div class="shortcut-row"><span class="text-small">Daily Planner</span><div class="flex" style="gap:4px"><kbd>⌘</kbd><kbd>B</kbd></div></div>
+              <div class="shortcut-row"><span class="text-small">Finance</span><div class="flex" style="gap:4px"><kbd>⌘</kbd><kbd>F</kbd></div></div>
+              <div class="shortcut-row"><span class="text-small">Lead Pipeline</span><div class="flex" style="gap:4px"><kbd>⌘</kbd><kbd>L</kbd></div></div>
+              <div class="shortcut-row"><span class="text-small">Close / Dismiss</span><div class="flex" style="gap:4px"><kbd>Esc</kbd></div></div>
+              <div class="shortcut-row"><span class="text-small">Navigate Screens</span><div class="flex" style="gap:4px"><kbd>⌘</kbd><kbd>1</kbd><span class="text-muted text-small">–</span><kbd>9</kbd></div></div>
+            </div>
+            <div class="settings-note" style="margin-top:20px"><i data-lucide="info" style="width:14px;height:14px;flex-shrink:0"></i> Custom shortcut binding is on the roadmap.</div>
+          </div>
+
+          <!-- Developer -->
+          <div class="settings-panel hidden" id="stab-developer">
+            <div class="settings-section-title">API Access</div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">REST API</div><div class="settings-row-desc">External integrations connect at <code>http://localhost:3000/api</code></div></div>
+              <span class="badge badge-emerald">Active</span>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Webhook URL</div><div class="settings-row-desc">Receive external triggers at this endpoint</div></div>
+              <code class="settings-code" id="webhook-url">http://localhost:3000/webhook</code>
+            </div>
+            <div class="settings-section-title" style="margin-top:28px">Debug</div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Log Agent Runs</div><div class="settings-row-desc">Save full agent traces to SQLite for debugging</div></div>
+              <div class="toggle on" id="debug-log-toggle"></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info"><div class="settings-row-label">Show Token Usage</div><div class="settings-row-desc">Display input/output token counts after each agent run</div></div>
+              <div class="toggle" id="debug-tokens-toggle"></div>
+            </div>
+            <div class="settings-section-title" style="margin-top:28px">System Info</div>
+            <div id="settings-system-info" class="settings-system-info">Loading…</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+</div>
+
+<!-- NOTIFICATIONS PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-panel-header">
+    <div class="text-h3">Notifications</div>
+    <button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark all read</button>
+  </div>
+  <div id="notif-list" style="max-height:480px;overflow-y:auto"></div>
+</div>
+
+<!-- GLOBAL SEARCH -->
+<div class="search-overlay" id="search-overlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-box">
+    <div class="search-input-row">
+      <i data-lucide="search" style="width:18px;height:18px;color:var(--text-3)"></i>
+      <input type="text" class="search-main-input" id="search-input" placeholder="Search clients, deliverables, leads, agents..." />
+      <kbd class="text-small text-dim" style="padding:3px 6px;background:var(--surface-3);border-radius:4px">esc</kbd>
+    </div>
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<!-- NEW TOOL MODAL -->
+<div class="modal-overlay" id="new-tool-modal" onclick="if(event.target===this)closeNewToolModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Create New Tool</div>
+      <button class="btn-icon btn btn-ghost" onclick="closeNewToolModal()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Tool Name *</label>
+        <input class="form-input" id="nt-name" placeholder="e.g., Product Description Writer" />
+      </div>
+      <div class="grid grid-2" style="gap:12px">
+        <div class="form-group">
+          <label class="form-label">Icon (emoji)</label>
+          <input class="form-input" id="nt-icon" placeholder="🔧" maxlength="4" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Short Description</label>
+          <input class="form-input" id="nt-desc" placeholder="What this tool does" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">System Prompt *</label>
+        <textarea class="form-input" id="nt-prompt" rows="5" placeholder="You are an expert copywriter. Given a product name and features, write a compelling product description in 100 words..."></textarea>
+        <div class="text-small text-muted" style="margin-top:6px">The user's typed input will be appended as "Input: ..." at the end.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeNewToolModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewTool()"><i data-lucide="plus" style="width:14px;height:14px"></i> Create Tool</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOM CONNECTOR MODAL -->
+<div class="modal-overlay" id="custom-connector-modal" onclick="if(event.target===this)closeCustomConnectorModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Add Custom Connector</div>
+        <div class="text-small text-muted mt-2">Connect any HTTP API, webhook, or MCP server</div>
+      </div>
+      <button class="btn-icon btn btn-ghost" onclick="closeCustomConnectorModal()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Connector Name *</label>
+        <input class="form-input" id="cc-name" placeholder="e.g., Stripe, HubSpot, Custom CRM" />
+      </div>
+      <div class="grid grid-2" style="gap:12px">
+        <div class="form-group">
+          <label class="form-label">Type *</label>
+          <select class="form-input" id="cc-type">
+            <option value="rest_api">REST API</option>
+            <option value="webhook">Webhook</option>
+            <option value="mcp">MCP Server</option>
+            <option value="graphql">GraphQL</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icon (emoji)</label>
+          <input class="form-input" id="cc-icon" placeholder="🔌" maxlength="4" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Endpoint URL *</label>
+        <input class="form-input" id="cc-url" placeholder="https://api.example.com/v1" />
+      </div>
+      <div class="grid grid-2" style="gap:12px">
+        <div class="form-group">
+          <label class="form-label">Auth Type</label>
+          <select class="form-input" id="cc-auth-type">
+            <option value="bearer">Bearer Token</option>
+            <option value="api_key">API Key (header)</option>
+            <option value="basic">Basic Auth</option>
+            <option value="none">No Auth</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Auth Header Name</label>
+          <input class="form-input" id="cc-auth-header" placeholder="Authorization or X-API-Key" value="Authorization" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Token / Key</label>
+        <input class="form-input" type="password" id="cc-token" placeholder="Bearer eyJ... or sk-..." />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-input" id="cc-desc" rows="2" placeholder="Short description of what this connector does"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeCustomConnectorModal()">Cancel</button>
+      <button class="btn btn-secondary" onclick="testCustomConnector()"><i data-lucide="zap" style="width:13px;height:13px"></i> Test</button>
+      <button class="btn btn-primary" onclick="saveCustomConnector()"><i data-lucide="plus" style="width:14px;height:14px"></i> Save Connector</button>
+    </div>
+  </div>
+</div>
+
+<!-- ONBOARDING MODAL -->
+<div class="modal-overlay" id="onboarding-modal" onclick="if(event.target===this)closeOnboarding()">
+  <div class="modal modal-lg onboarding-wizard">
+    <div class="modal-header">
+      <div><div class="modal-title">Add New Client</div><div class="text-small text-muted mt-2">Onboard a new client to Manthan OS</div></div>
+      <button class="btn-icon btn btn-ghost" onclick="closeOnboarding()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="grid grid-2">
+        <div class="form-group"><label class="form-label">Client Name *</label><input class="form-input" id="ob-name" placeholder="e.g., Mocha Coffee Co." /></div>
+        <div class="form-group"><label class="form-label">Brand Name</label><input class="form-input" id="ob-brand" placeholder="If different from client name" /></div>
+        <div class="form-group"><label class="form-label">Industry *</label><input class="form-input" id="ob-industry" placeholder="e.g., F&B, Fashion, Wellness" /></div>
+        <div class="form-group">
+          <label class="form-label">Engagement Type</label>
+          <div class="engagement-toggle" id="ob-engagement-toggle">
+            <button class="engage-btn active" data-type="retainer" onclick="setEngagementType('retainer',this)">Retainer</button>
+            <button class="engage-btn" data-type="one-time" onclick="setEngagementType('one-time',this)">One-Time</button>
+          </div>
+        </div>
+        <div class="form-group" id="ob-retainer-group"><label class="form-label">Monthly Retainer (₹)</label><input class="form-input" id="ob-retainer" type="number" placeholder="50000" /></div>
+        <div class="form-group hidden" id="ob-project-value-group"><label class="form-label">Project Value (₹)</label><input class="form-input" id="ob-project-value" type="number" placeholder="150000" /></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Brand Voice (Tone)</label><input class="form-input" id="ob-tone" placeholder="e.g., warm, premium, conversational" /></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Active Channels</label><input class="form-input" id="ob-channels" placeholder="Instagram, LinkedIn, WhatsApp" /></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">WhatsApp Number</label><input class="form-input" id="ob-whatsapp" placeholder="91XXXXXXXXXX" /></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Brand Color</label><div class="gradient-picker" id="gradient-picker"></div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeOnboarding()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitOnboarding()" id="onboarding-submit"><i data-lucide="rocket" style="width:14px;height:14px"></i> Onboard Client</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT/AGENT SELECTOR -->
+<div class="modal-overlay" id="selector-modal" onclick="if(event.target===this)closeSelector()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="selector-title">Select</div>
+      <button class="btn-icon btn btn-ghost" onclick="closeSelector()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+    </div>
+    <div class="modal-body" id="selector-body"></div>
+  </div>
+</div>
+
+<!-- INVOICE MODAL -->
+<div class="modal-overlay" id="invoice-modal" onclick="if(event.target===this)closeInvoiceModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Create Invoice</div>
+      <button class="btn-icon btn btn-ghost" onclick="closeInvoiceModal()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Client</label><select class="form-input" id="invoice-client"></select></div>
+      <div class="form-group"><label class="form-label">Amount (₹)</label><input class="form-input" id="invoice-amount" type="number" /></div>
+      <div class="form-group"><label class="form-label">Due Date</label><input class="form-input" id="invoice-due" type="date" /></div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-input" id="invoice-notes" rows="3"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeInvoiceModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="createInvoice()">Create Invoice</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONNECTOR CONFIGURE MODAL -->
+<div class="modal-overlay" id="connector-modal" onclick="if(event.target===this)closeConnectorModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="connector-modal-title">Configure Connector</div>
+      <button class="btn-icon btn btn-ghost" onclick="closeConnectorModal()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+    </div>
+    <div class="modal-body" id="connector-modal-body">
+      <!-- dynamically populated by openConnectorModal() -->
+    </div>
+    <div id="connector-modal-status" style="padding:0 24px 8px;font-size:13px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="testConnector()"><i data-lucide="zap" style="width:14px;height:14px"></i> Test</button>
+      <button class="btn btn-primary" onclick="saveConnectorKey()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECT MODAL -->
+<div class="modal-overlay" id="project-modal" onclick="if(event.target===this)closeProjectModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">New Project</div>
+      <button class="btn-icon btn btn-ghost" onclick="closeProjectModal()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Project Name *</label><input class="form-input" id="proj-name" placeholder="e.g., Instagram Reels Q3" /></div>
+      <div class="form-group"><label class="form-label">Client *</label><select class="form-input" id="proj-client"></select></div>
+      <div class="form-group"><label class="form-label">Status</label><select class="form-input" id="proj-status"><option>Not Started</option><option>In Progress</option><option>Review</option><option>Done</option></select></div>
+      <div class="form-group"><label class="form-label">Due Date</label><input class="form-input" id="proj-due" type="date" /></div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="proj-desc" rows="3" placeholder="Brief project description..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeProjectModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="createProject()"><i data-lucide="folder-plus" style="width:14px;height:14px"></i> Create Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- AGENT DETAIL SLIDE-OVER -->
+<div class="agent-detail-overlay hidden" id="agent-detail-overlay" onclick="if(event.target===this)closeAgentDetail()">
+  <div class="agent-detail-panel">
+    <div class="adp-topbar">
+      <span class="text-small text-muted">Agent Details</span>
+      <button class="btn btn-ghost btn-sm" onclick="closeAgentDetail()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+    </div>
+    <div id="agent-detail-body"></div>
+  </div>
+</div>
+
+<!-- AGENT CREATE WIZARD -->
+<div class="modal-overlay" id="agent-create-modal" onclick="if(event.target===this)closeAgentCreate()">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div><div class="modal-title">Create Agent</div><div class="text-small text-muted" id="agent-wizard-step-label">Step 1 of 3 — Identity</div></div>
+      <button class="btn-icon btn btn-ghost" onclick="closeAgentCreate()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+    </div>
+    <div class="modal-body" id="agent-wizard-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="agent-wizard-back" onclick="agentWizardBack()" style="display:none">← Back</button>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="closeAgentCreate()">Cancel</button>
+        <button class="btn btn-primary" id="agent-wizard-next" onclick="agentWizardNext()">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Mobile bottom navigation -->
+<nav class="mobile-nav" id="mobile-nav">
+  <button class="mobile-nav-item active" data-screen="dashboard" onclick="navigate('dashboard');_setMobileNav(this)">
+    <i data-lucide="layout-dashboard"></i><span>Home</span>
+  </button>
+  <button class="mobile-nav-item" data-screen="daily-planner" onclick="navigate('daily-planner');_setMobileNav(this)">
+    <i data-lucide="sun"></i><span>Planner</span>
+  </button>
+  <button class="mobile-nav-item" data-screen="chat" onclick="navigate('chat');_setMobileNav(this)">
+    <i data-lucide="message-square"></i><span>Chat</span>
+  </button>
+  <button class="mobile-nav-item" data-screen="lead-pipeline" onclick="navigate('lead-pipeline');_setMobileNav(this)">
+    <i data-lucide="target"></i><span>Leads</span>
+  </button>
+  <button class="mobile-nav-item" data-screen="clients" onclick="navigate('clients');_setMobileNav(this)">
+    <i data-lucide="users"></i><span>Clients</span>
+  </button>
+</nav>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/features.js"></script>
+</body>
+</html>
